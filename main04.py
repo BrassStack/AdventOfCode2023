@@ -11,27 +11,49 @@ file.close()
 # 10 winning numbers | 25 my numbers
 pattern = r'Card +\d+: +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +\| +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+) +(\d+)'
 
-score = 0
-lineNum = 1
-for line in data:
+def ParseCard(line):
+    winners = []
+    mine = []
     matches = re.search(pattern, line)
     if matches:
-        winners = []
-        mine = []
         for idx in range(35):
             if idx < 10:
                 winners.append(matches.group(idx+1))
             else:
                 mine.append(matches.group(idx+1))
+    return (winners, mine)
+
+cardMatches = [0] # Contains the number of matches for each card number
+cardCounts  = [0] # Contains the number of copies of each card number
+
+for idx in range(len(data)):
+    cardCounts.append(1)
+
+score   = 0
+lineNum = 1
+
+for line in data:
+    (winners, mine) = ParseCard(line)
                 
-        numberOfMatches = 0
-        for n in mine:
-            numberOfMatches += winners.count(n)
-            
-        if numberOfMatches > 0:
-            score += 2 ** (numberOfMatches - 1)
-            print( "Card " + str(lineNum) + " matches: " + str(numberOfMatches) )
-            print( "New score: " + str(score) )
+    numberOfMatches = 0
+    for n in mine:
+        numberOfMatches += winners.count(n)
+    
+    if numberOfMatches > 0:
+        score += 2 ** (numberOfMatches - 1)
+        print( "Card " + str(lineNum) + " matches: " + str(numberOfMatches) )
+        print( "New score: " + str(score) )
+
+    cardMatches.append(numberOfMatches)
     lineNum += 1
 
 print( "Result 1: " + str(score) )
+
+cardNum = 0
+for matchCount in cardMatches:
+    for n in range(matchCount):
+        cardCounts[cardNum + n + 1] += cardCounts[cardNum]
+
+    cardNum += 1
+
+print( "Result 2: " + str(sum(cardCounts)) )
