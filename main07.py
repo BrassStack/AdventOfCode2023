@@ -8,7 +8,7 @@
 # High card, where all cards' labels are distinct: 23456
 
 # Load data
-file = open('sample07.txt','r')
+file = open('input07.txt','r')
 data = file.readlines()
 file.close()
 
@@ -68,15 +68,16 @@ data  = lines.split( "|" )
 
 # Compute strength of a hand (ascii 50 through 69 plus specials)
 def GetStrength( hand ):
+    if len( hand ) != 5:
+        raise Exception( "Unexpected hand input" )
+        
     cards  = MergeSort( list( hand ), 0, 4 ) # Sort cards in hand, low to high
-    first  = cards[0]
-    last   = cards[4]
-    cFirst = cards.count( first )
+    cFirst = cards.count( cards[0] )
     cThird = cards.count( cards[2] )
-    cLast  = cards.count( last )
+    cLast  = cards.count( cards[4] )
 
     # Five of a kind
-    if first == last:
+    if cFirst == 5:
         return "75"
     # Four of a kind
     if cFirst == 4 or cLast == 4:
@@ -94,32 +95,19 @@ def GetStrength( hand ):
     if cFirst == 2 or cThird == 2 or cLast == 2:
         return "70"
     # High card
-    return str( ord( cards[4] ) )
+    return "69" #str( ord( cards[4] ) )
 
 # Prepend strengths, zero-padded for comparison
 for i in range( len( data ) ):
-    data[i] = GetStrength( data[i][:5] ) + " " + data[i]
+    data[i] = GetStrength( data[i][:5] ) + data[i]
 
 # Sort hands by strength
 data = MergeSort( data, 0, len( data ) - 1 )
 
-# Replace sortable characters with face cards
-translation = str.maketrans( "ABCDE", "TJQKA" )
-lines = "|".join( data )
-lines = lines.translate( translation )
-data  = lines.split( "|" )
-
 # Calculate winnings based on rank
 result1 = 0
 for rank in range( 1, len( data ) + 1 ):
-    print( data[rank - 1] )
-    print( "  Rank: " + str( rank ) )
-
-    bet = int( data[rank - 1].split( " " )[2] )
-    print( "   Bet: " + str( bet ) )
-
+    bet = int( data[rank - 1].split( " " )[1] )
     result1 += bet * rank
-    print( "   Tot: " + str( result1 ) )
-    print()
 
 print( "Total winnings: " + str( result1 ) )
