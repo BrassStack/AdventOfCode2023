@@ -61,7 +61,7 @@ def Merge( strings, left, mid, right ):
     return strings
 
 # Replace face cards with sortable characters
-translation = str.maketrans( "AKQJT", "EDCBA", "\n" )
+translation = str.maketrans( "AKQJT", "EDC1A", "\n" )
 lines = "|".join( data )
 lines = lines.translate( translation )
 data  = lines.split( "|" )
@@ -97,17 +97,50 @@ def GetStrength( hand ):
     # High card
     return "69" #str( ord( cards[4] ) )
 
+# Compute strength of a hand (ascii 50 through 69 plus specials)
+def GetStrengthPart2( hand ):
+    if len( hand ) != 5:
+        raise Exception( "Unexpected hand input" )
+        
+    cards   = MergeSort( list( hand ), 0, 4 ) # Sort cards in hand, low to high
+    cFirst  = cards.count( cards[0] )
+    cSecond = cards.count( cards[1] )
+    cThird  = cards.count( cards[2] )
+    cLast   = cards.count( cards[4] )
+    cWilds  = cards.count( "1" )
+
+    # Five of a kind
+    if cLast + cWilds == 5 or cWilds == 5:
+        return "75"
+    # Four of a kind
+    if max( cThird, cLast ) + cWilds >= 4:
+        return "74"
+    # Full house
+    if cWilds <= 1 and cWilds + cSecond + cLast == 5:
+        return "73"
+    # Three of a kind
+    if cThird + cWilds == 3 or cLast + cWilds == 3:
+        return "72"
+    # Two pair
+    if cFirst + cThird + cLast + cWilds == 5:
+        return "71"
+    # One pair
+    if cFirst + cWilds == 2 or cThird + cWilds == 2 or cLast + cWilds == 2:
+        return "70"
+    # High card
+    return "69" #str( ord( cards[4] ) )
+
 # Prepend strengths, zero-padded for comparison
 for i in range( len( data ) ):
-    data[i] = GetStrength( data[i][:5] ) + data[i]
+    data[i] = GetStrengthPart2( data[i][:5] ) + " " + data[i]
 
 # Sort hands by strength
 data = MergeSort( data, 0, len( data ) - 1 )
 
 # Calculate winnings based on rank
-result1 = 0
+result2 = 0
 for rank in range( 1, len( data ) + 1 ):
-    bet = int( data[rank - 1].split( " " )[1] )
-    result1 += bet * rank
+    bet = int( data[rank - 1].split( " " )[2] )
+    result2 += bet * rank
 
-print( "Total winnings: " + str( result1 ) )
+print( "Total winnings: " + str( result2 ) )
